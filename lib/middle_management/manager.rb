@@ -3,7 +3,7 @@ require 'heroku'
 module MiddleManagement
   class Manager
     def self.enforce_number_of_current_jobs(num)
-      self.set_num_workers([ENV['MIDDLE_MANAGEMENT_MIN_WORKERS'].to_i, num].max)
+      self.set_num_workers([ENV['MIDDLE_MANAGEMENT_MIN_WORKERS'].to_i, [num, ENV['MIDDLE_MANAGEMENT_MAX_WORKERS'].to_i].min].max)
     end
     
     private

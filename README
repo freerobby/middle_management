@@ -7,3 +7,4 @@ Middle Management requires the following environment variables to be set:
   MIDDLE_MANAGEMENT_HEROKU_PASSWORD (your heroku password)
   MIDDLE_MANAGEMENT_HEROKU_APP (the name of your heroku app)
   MIDDLE_MANAGEMENT_MIN_WORKERS (the minimum number of workers to keep running; typically 0)
+  MIDDLE_MANAGEMENT_MAX_WORKERS (the maximum number of workers to allow to run)
