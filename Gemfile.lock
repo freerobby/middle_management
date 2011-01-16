@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     middle_management (0.0.1)
+      activesupport (~> 3.0)
       delayed_job (>= 2.1.2)
       heroku (>= 1.17.5)
 
@@ -100,6 +101,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  activesupport (~> 3.0)
   delayed_job (>= 2.1.2)
   fakeweb (>= 1.3.0)
   heroku (>= 1.17.5)

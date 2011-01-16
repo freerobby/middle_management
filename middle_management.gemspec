@@ -12,6 +12,7 @@ Gem::Specification.new do |s|
   s.summary     = %q{Delayed Job worker management for Heroku.}
   s.description = %q{Middle Management hires and fires your delayed_job workers automatically so that you get all of your work done quickly for as little money as possible.}
   
+  s.add_runtime_dependency "activesupport", "~> 3.0"
   s.add_runtime_dependency "delayed_job", ">= 2.1.2"
   s.add_runtime_dependency "heroku", ">= 1.17.5"
   
