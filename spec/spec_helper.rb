@@ -19,3 +19,8 @@ RSpec.configure do |config|
     @env_backup.keys.each {|key| ENV[key] = @env_backup[key]}
   end
 end
+
+def stub_config(constant, value)
+  MiddleManagement::Config.send(:remove_const, constant)
+  MiddleManagement::Config.const_set(constant, value)
+end

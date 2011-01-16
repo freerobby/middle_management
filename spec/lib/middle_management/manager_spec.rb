@@ -3,9 +3,9 @@ require File.expand_path("#{File.dirname(__FILE__)}/../../spec_helper")
 describe MiddleManagement::Manager do
   describe "#enforce_number_of_current_jobs" do
     before do
-      ENV['MIDDLE_MANAGEMENT_HEROKU_APP'] = "test_app"
-      ENV['MIDDLE_MANAGEMENT_MIN_WORKERS'] = '1'
-      ENV['MIDDLE_MANAGEMENT_MAX_WORKERS'] = '10'
+      stub_config(:HEROKU_APP, "test_app")
+      stub_config(:MIN_WORKERS, 1)
+      stub_config(:MAX_WORKERS, 10)
       @client_mock = mock("Heroku Client")
       MiddleManagement::Manager.should_receive(:get_heroku_client).any_number_of_times.and_return(@client_mock)
     end
@@ -26,8 +26,8 @@ describe MiddleManagement::Manager do
   describe "private methods" do
     describe "#get_heroku_client" do
       it "instantiates a heroku client using environment variables" do
-        ENV['MIDDLE_MANAGEMENT_HEROKU_USERNAME'] = "test_user"
-        ENV['MIDDLE_MANAGEMENT_HEROKU_PASSWORD'] = "test_pass"
+        stub_config(:HEROKU_USERNAME, "test_user")
+        stub_config(:HEROKU_PASSWORD, "test_pass")
         Heroku::Client.should_receive(:new).with("test_user", "test_pass").exactly(:once)
         MiddleManagement::Manager.send(:get_heroku_client)
       end
@@ -37,7 +37,7 @@ describe MiddleManagement::Manager do
       it "sets the specified number of workers" do
         client_mock = mock("Heroku Client")
         MiddleManagement::Manager.should_receive(:get_heroku_client).and_return(client_mock)
-        ENV['MIDDLE_MANAGEMENT_HEROKU_APP'] = "test_app"
+        stub_config(:HEROKU_APP, "test_app")
         client_mock.should_receive(:set_workers).with("test_app", 3).exactly(:once)
         MiddleManagement::Manager.send(:set_num_workers, 3)
       end
