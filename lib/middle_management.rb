@@ -1,3 +1,7 @@
 module MiddleManagement
-  # Your code goes here...
+  class TestClass
+    def self.test
+      "pass!"
+    end
+  end
 end
