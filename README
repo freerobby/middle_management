@@ -1,0 +1,3 @@
+Delayed Job worker management for Heroku.
+
+Middle Management hires and fires your delayed_job workers automatically so that you get all of your work done quickly for as little money as possible.
