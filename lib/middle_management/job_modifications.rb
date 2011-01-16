@@ -1,25 +1,18 @@
 require 'active_record'
 require 'delayed_job'
+require 'delayed/backend/active_record'
 
 module Delayed
   module Backend
     module ActiveRecord
       class Job < ::ActiveRecord::Base
-        def self.new_with_micromanagement
-          self.new_without_micromanagement
-          MiddleManagement::Manager.enforce_number_of_current_jobs(self.ready_to_run.count)
+        after_create {Delayed::Backend::ActiveRecord::Job.send(:enforce)}
+        after_destroy {Delayed::Backend::ActiveRecord::Job.send(:enforce)}
+
+        private
+        def self.enforce
+          MiddleManagement::Manager.enforce_number_of_current_jobs(Delayed::Backend::ActiveRecord::Job.where("run_at <= ? AND failed_at IS NULL AND locked_by IS NULL", Delayed::Backend::ActiveRecord::Job.db_time_now).count)
         end
-        class << self
-          alias_method :new_without_micromanagement, :new
-          alias_method :new, :new_with_micromanagement
-        end
-        
-        def destroy_with_micromanagement
-          destroy_without_micromanagement
-          MiddleManagement::Manager.enforce_number_of_current_jobs(Delayed::Backend::ActiveRecord::Job.ready_to_run.count)
-        end
-        alias_method :destroy_without_micromanagement, :destroy
-        alias_method :destroy, :destroy_with_micromanagement
       end
     end
   end
