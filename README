@@ -1,3 +1,11 @@
 Delayed Job worker management for Heroku.
 
 Middle Management hires and fires your delayed_job workers automatically so that you get all of your work done quickly for as little money as possible.
+
+Middle Management requires the following environment variables to be set:
+
+MIDDLE_MANAGEMENT_HEROKU_USERNAME (your heroku username)
+MIDDLE_MANAGEMENT_HEROKU_PASSWORD (your heroku password)
+MIDDLE_MANAGEMENT_HEROKU_APP (the name of your heroku app)
+MIDDLE_MANAGEMENT_MIN_WORKERS (the minimum number of workers to keep running; typically 0)
+

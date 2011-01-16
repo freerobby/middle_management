@@ -12,6 +12,8 @@ Gem::Specification.new do |s|
   s.summary     = %q{Delayed Job worker management for Heroku.}
   s.description = %q{Middle Management hires and fires your delayed_job workers automatically so that you get all of your work done quickly for as little money as possible.}
   
+  s.add_dependency "heroku", ">= 1.17.5"
+  
   s.add_development_dependency "rspec", ">= 2.4.0"
 
   s.rubyforge_project = "middle_management"

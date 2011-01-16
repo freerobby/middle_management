@@ -1,7 +1,4 @@
-require 'middle_management'
+require File.expand_path("#{File.dirname(__FILE__)}/../spec_helper")
 
 describe MiddleManagement do
-  it "executes test()" do
-    MiddleManagement::TestClass.test.should == "pass!"
-  end
 end
