@@ -27,8 +27,21 @@ describe MiddleManagement::Manager do
       @client_mock = mock("Heroku Client")
       MiddleManagement::Manager.should_receive(:get_heroku_client).any_number_of_times.and_return(@client_mock)
     end
+    describe "second call within 10 seconds" do
+      it "delays run for 10 seconds" do
+        MiddleManagement::Manager.send(:num_workers_last_set_at=, 5.seconds.ago)
+        MiddleManagement::Manager.send(:current_worker_count=, 5)
+        @client_mock.should_not_receive(:set_workers)
+        MiddleManagement::Manager.should_receive(:current_jobs_count).any_number_of_times.and_return(6)
+        delay_result = mock("Delay Object Result")
+        delay_result.should_receive(:enforce_number_of_current_jobs).exactly(:once)
+        MiddleManagement::Manager.should_receive(:delay).exactly(:once).and_return(delay_result)
+        MiddleManagement::Manager.enforce_number_of_current_jobs
+      end
+    end
     describe "changes number of workers" do
       it "makes api call" do
+        MiddleManagement::Manager.send(:num_workers_last_set_at=, nil)
         MiddleManagement::Manager.send(:current_worker_count=, 5)
         @client_mock.should_receive(:set_workers).exactly(:once)
         MiddleManagement::Manager.should_receive(:current_jobs_count).any_number_of_times.and_return(6)
@@ -37,6 +50,7 @@ describe MiddleManagement::Manager do
     end
     describe "no change to number of workers" do
       it "does not make api call" do
+        MiddleManagement::Manager.send(:num_workers_last_set_at=, nil)
         MiddleManagement::Manager.send(:current_worker_count=, 5)
         MiddleManagement::Manager.should_receive(:current_jobs_count).any_number_of_times.and_return(5)
         @client_mock.should_not_receive(:set_workers)

@@ -50,6 +50,11 @@ Next 10 emails sent                                               10
 Next 10 emails sent               Stop 5 workers                  5
 Last 5 emails sent                Stop 5 workers                  0
 
+Accuracy and Caching Notes:
+* Job counts are queried no more than once per minute. If you create and destroy jobs through ActiveRecord, the internal counts will always be accurate; however if you delete jobs from a SQL tool, the counts will be out of date until the next count query is made.
+
+* To prevent flooding Heroku with API calls when large batches of jobs are created, worker API calls are made no more than once every 10 seconds. If a call is algorithmically ready to be made before that, it will be delayed 10 seconds. In a worst case scenario, this could allow your workers to run 10 seconds longer than needed.
+
 Testing in your heroku environment:
 
 Middle Management comes with a Slacker class, whose sole purpose is to create jobs that take some time to run. You can use this class to create jobs in your production environment and monitor how your workers scale accordingly.

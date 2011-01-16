@@ -8,11 +8,11 @@ module Delayed
       class Job < ::ActiveRecord::Base
         after_create do
           MiddleManagement::Manager.track_creation
-          MiddleManagement::enforce_number_of_current_jobs
+          MiddleManagement::Manager.enforce_number_of_current_jobs
         end
         after_destroy do
           MiddleManagement::Manager.track_completion
-          MiddleManagement::enforce_number_of_current_jobs
+          MiddleManagement::Manager.enforce_number_of_current_jobs
         end
       end
     end

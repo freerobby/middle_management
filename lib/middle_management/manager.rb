@@ -5,7 +5,14 @@ require 'delayed/backend/active_record'
 module MiddleManagement
   class Manager
     def self.enforce_number_of_current_jobs
-      self.set_num_workers(self.calculate_needed_worker_count(current_jobs_count)) if self.num_jobs_changes_worker_count?(current_jobs_count)
+      if self.num_jobs_changes_worker_count?(current_jobs_count)
+        if num_workers_last_set_at.nil? || num_workers_last_set_at < 10.seconds.ago
+          self.set_num_workers(self.calculate_needed_worker_count(current_jobs_count))
+          num_workers_last_set_at = Time.now
+        else
+          self.delay(:run_at => Proc.new{10.seconds.from_now}).enforce_number_of_current_jobs
+        end
+      end
     end
     
     def self.track_creation
@@ -17,6 +24,7 @@ module MiddleManagement
     end
     
     private
+    cattr_accessor :num_workers_last_set_at
     cattr_accessor :current_worker_count
     cattr_writer :current_jobs_count
     cattr_accessor :current_jobs_count_last_queried
