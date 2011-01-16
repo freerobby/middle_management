@@ -6,12 +6,13 @@ module Delayed
   module Backend
     module ActiveRecord
       class Job < ::ActiveRecord::Base
-        after_create {Delayed::Backend::ActiveRecord::Job.send(:enforce)}
-        after_destroy {Delayed::Backend::ActiveRecord::Job.send(:enforce)}
-
-        private
-        def self.enforce
-          MiddleManagement::Manager.enforce_number_of_current_jobs(Delayed::Backend::ActiveRecord::Job.where("run_at <= ? AND failed_at IS NULL AND locked_by IS NULL", Delayed::Backend::ActiveRecord::Job.db_time_now).count)
+        after_create do
+          MiddleManagement::Manager.track_creation
+          MiddleManagement::enforce_number_of_current_jobs
+        end
+        after_destroy do
+          MiddleManagement::Manager.track_completion
+          MiddleManagement::enforce_number_of_current_jobs
         end
       end
     end

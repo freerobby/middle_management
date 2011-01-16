@@ -1,6 +1,24 @@
 require File.expand_path("#{File.dirname(__FILE__)}/../../spec_helper")
 
 describe MiddleManagement::Manager do
+  describe "#track_creation" do
+    it "increments jobs count" do
+      MiddleManagement::Manager.should_receive(:current_jobs_count_last_queried).any_number_of_times.and_return(1.second.ago)
+      MiddleManagement::Manager.send(:current_jobs_count=, 3)
+      MiddleManagement::Manager.track_creation
+      MiddleManagement::Manager.send(:current_jobs_count).should == 4
+    end
+  end
+  
+  describe "#track_completion" do
+    it "decrements jobs count" do
+      MiddleManagement::Manager.should_receive(:current_jobs_count_last_queried).any_number_of_times.and_return(1.second.ago)
+      MiddleManagement::Manager.send(:current_jobs_count=, 3)
+      MiddleManagement::Manager.track_completion
+      MiddleManagement::Manager.send(:current_jobs_count).should == 2
+    end
+  end
+  
   describe "#enforce_number_of_current_jobs" do
     before do
       stub_config(:HEROKU_APP, "test_app")
@@ -13,19 +31,48 @@ describe MiddleManagement::Manager do
       it "makes api call" do
         MiddleManagement::Manager.send(:current_worker_count=, 5)
         @client_mock.should_receive(:set_workers).exactly(:once)
-        MiddleManagement::Manager.enforce_number_of_current_jobs(6)
+        MiddleManagement::Manager.should_receive(:current_jobs_count).any_number_of_times.and_return(6)
+        MiddleManagement::Manager.enforce_number_of_current_jobs
       end
     end
     describe "no change to number of workers" do
       it "does not make api call" do
         MiddleManagement::Manager.send(:current_worker_count=, 5)
+        MiddleManagement::Manager.should_receive(:current_jobs_count).any_number_of_times.and_return(5)
         @client_mock.should_not_receive(:set_workers)
-        MiddleManagement::Manager.enforce_number_of_current_jobs(5)
+        MiddleManagement::Manager.enforce_number_of_current_jobs
       end
     end
   end
   
   describe "private methods" do
+    describe "#current_jobs_count" do
+      it "queries if hasn't queried" do
+        MiddleManagement::Manager.send(:current_jobs_count=, nil)
+        MiddleManagement::Manager.send(:current_jobs_count_last_queried=, nil)
+        MiddleManagement::Manager.should_receive(:current_jobs_count_last_queried).any_number_of_times.and_return(nil)
+        r = mock("Result")
+        r.should_receive(:count).exactly(:once).and_return(3)
+        Delayed::Backend::ActiveRecord::Job.should_receive(:where).exactly(:once).and_return(r)
+        MiddleManagement::Manager.send(:current_jobs_count).should == 3
+      end
+      it "queries if last query was > 1 minute ago" do
+        MiddleManagement::Manager.send(:current_jobs_count=, nil)
+        MiddleManagement::Manager.send(:current_jobs_count_last_queried=, 90.seconds.ago)
+        MiddleManagement::Manager.should_receive(:current_jobs_count_last_queried).any_number_of_times.and_return(nil)
+        r = mock("Result")
+        r.should_receive(:count).exactly(:once).and_return(3)
+        Delayed::Backend::ActiveRecord::Job.should_receive(:where).exactly(:once).and_return(r)
+        MiddleManagement::Manager.send(:current_jobs_count).should == 3
+      end
+      it "uses cache if last query was < 1 minute ago" do
+        MiddleManagement::Manager.send(:current_jobs_count=, 5)
+        MiddleManagement::Manager.send(:current_jobs_count_last_queried=, 59.seconds.ago)
+        Delayed::Backend::ActiveRecord::Job.should_not_receive(:where)
+        MiddleManagement::Manager.send(:current_jobs_count).should == 5
+      end
+    end
+    
     describe "#calculate_needed_worker_count" do
       describe "1 job per worker" do
         before do

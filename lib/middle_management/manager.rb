@@ -1,13 +1,33 @@
 require 'heroku'
+require 'delayed_job'
+require 'delayed/backend/active_record'
 
 module MiddleManagement
   class Manager
-    def self.enforce_number_of_current_jobs(num)
-      self.set_num_workers(self.calculate_needed_worker_count(num)) if self.num_jobs_changes_worker_count?(num)
+    def self.enforce_number_of_current_jobs
+      self.set_num_workers(self.calculate_needed_worker_count(current_jobs_count)) if self.num_jobs_changes_worker_count?(current_jobs_count)
+    end
+    
+    def self.track_creation
+      self.current_jobs_count += 1
+    end
+    
+    def self.track_completion
+      self.current_jobs_count -= 1
     end
     
     private
     cattr_accessor :current_worker_count
+    cattr_writer :current_jobs_count
+    cattr_accessor :current_jobs_count_last_queried
+    
+    def self.current_jobs_count
+      if @@current_jobs_count.nil? || current_jobs_count_last_queried.nil? || current_jobs_count_last_queried < 1.minute.ago
+        self.current_jobs_count = Delayed::Backend::ActiveRecord::Job.where("run_at <= ? AND failed_at IS NULL AND locked_by IS NULL", Delayed::Backend::ActiveRecord::Job.db_time_now).count
+        self.current_jobs_count_last_queried = Time.now
+      end
+      @@current_jobs_count
+    end
     
     def self.calculate_needed_worker_count(num_jobs)
       ideal_worker_count = num_jobs / MiddleManagement::Config::JOBS_PER_WORKER + 1
