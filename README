@@ -2,7 +2,7 @@ Middle Management manages your Delayed Job workers on Heroku. It "hires" and "fi
 
 It requires delayed_job 2.1.2 or greater.
 
-You can get it working out of the box with two quick steps:
+To get started:
 
 1) Add "middle_management" to your Gemfile and run "bundle install"
 
@@ -13,19 +13,24 @@ You can get it working out of the box with two quick steps:
   MIDDLE_MANAGEMENT_MIN_WORKERS (the minimum number of workers to keep running; typically 0)
   MIDDLE_MANAGEMENT_MAX_WORKERS (the maximum number of workers to allow to run)
 
-Deploy to heroku and voila - you've got auto-scaling workers!
+3) Deploy to heroku and voila - you've got auto-scaling workers!
+
+You can also limit the rate at which workers will scale up by setting:
+  MIDDLE_MANAGEMENT_JOBS_PER_WORKER (default = 1)
+This should be the number of jobs a single worker can do more quickly than it takes to bring up another heroku worker. For short tasks with high throughput (e.g. sending emails), you should bump this up (I set it at 10). For long tasks with low throughput (e.g. PDF generation or traversing a social graph), keep this low.
 
 How it works:
 
-Every time a job is created or destroyed, Middle Management checks to see how many jobs are outstanding and how many workers are reserved to work on them.
+Every time a job is created or destroyed, Middle Management checks to see how many jobs are outstanding and how many workers are reserved to work on them. If the number of workers needed differs from the number of current workers, Middle Management hires or fires the needed or excess workers.
 
-If there are more jobs than workers, Middle Management will "hire" more workers to complete them. It will honor the maximum number of workers, as set by the MIDDLE_MANAGEMENT_MAX_WORKERS variable.
+workers_needed is calculated as: outstanding jobs / MIDDLE_MANAGEMENT_JOBS_PER_WORKER
 
-If there are more workers than jobs, Middle Management will "fire" the workers that are not being used. It will honor the minimum number of workers, as set by the MIDDLE_MANAGEMENT_MIN_WORKERS variable. If you use Delayed Job to schedule future jobs, you should always keep at least one worker running so that it can be worked off at the appropriate time. If all of your jobs are runnable at the time they are created, it is safe to set this to zero.
+Middle Management will ALWAYS honor the maximum number of workers, as set by the MIDDLE_MANAGEMENT_MAX_WORKERS variable, and the minimum number of workers, as set by the MIDDLE_MANAGEMENT_MIN_WORKERS variable. If you use Delayed Job to schedule future jobs, you should always keep at least one worker running so that it can be worked off at the appropriate time. If all of your jobs are runnable at the time they are created, it is safe to set MIDDLE_MANAGEMENT_MIN_WORKERS to zero.
 
 Step-by-step chart, assumes:
 MIDDLE_MANAGEMENT_MIN_WORKERS=0
 MIDDLE_MANAGEMENT_MAX_WORKERS=10
+MIDDLE_MANAGEMENT_JOBS_PER_WORKER=1
 
 App Action                        Middle Management Action        Total Workers Running
 Boot Up                                                           0

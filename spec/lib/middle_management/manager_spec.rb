@@ -27,24 +27,72 @@ describe MiddleManagement::Manager do
   
   describe "private methods" do
     describe "#calculate_needed_worker_count" do
-      before do
-        stub_config(:MIN_WORKERS, 1)
-        stub_config(:MAX_WORKERS, 10)
+      describe "1 job per worker" do
+        before do
+          stub_config(:MIN_WORKERS, 1)
+          stub_config(:MAX_WORKERS, 10)
+          stub_config(:JOBS_PER_WORKER, 1)
+        end
+        it "returns min workers when fewer jobs than min workers" do
+          MiddleManagement::Manager.send(:calculate_needed_worker_count, 0).should == 1
+        end
+        it "returns max workers when more jobs than max workers" do
+          MiddleManagement::Manager.send(:calculate_needed_worker_count, 11).should == 10
+        end
+        it "returns number of jobs when job count in worker range" do
+          MiddleManagement::Manager.send(:calculate_needed_worker_count, 5).should == 5
+        end
       end
-      it "returns min workers when fewer jobs than min workers" do
-        MiddleManagement::Manager.send(:calculate_needed_worker_count, 0).should == 1
+      describe "3 jobs per worker, MIN=0, MAX=10" do
+        before do
+          stub_config(:MIN_WORKERS, 0)
+          stub_config(:MAX_WORKERS, 10)
+          stub_config(:JOBS_PER_WORKER, 3)
+        end
+        it "returns 0 workers for 0 jobs" do
+          MiddleManagement::Manager.send(:calculate_needed_worker_count, 0).should == 0
+        end
       end
-      it "returns max workers when more jobs than max workers" do
-        MiddleManagement::Manager.send(:calculate_needed_worker_count, 11).should == 10
-      end
-      it "returns number of jobs when job count in worker range" do
-        MiddleManagement::Manager.send(:calculate_needed_worker_count, 5).should == 5
+      describe "3 jobs per worker, MIN=1 MAX=10" do
+        before do
+          stub_config(:MIN_WORKERS, 1)
+          stub_config(:MAX_WORKERS, 10)
+          stub_config(:JOBS_PER_WORKER, 3)
+        end
+        it "returns 1 worker for 0 jobs" do
+          MiddleManagement::Manager.send(:calculate_needed_worker_count, 0).should == 1
+        end
+        it "returns 1 worker for 1 job" do
+          MiddleManagement::Manager.send(:calculate_needed_worker_count, 1).should == 1
+        end
+        it "returns 1 worker for 2 jobs" do
+          MiddleManagement::Manager.send(:calculate_needed_worker_count, 2).should == 1
+        end
+        it "returns 1 worker for 3 jobs" do
+          MiddleManagement::Manager.send(:calculate_needed_worker_count, 3).should == 1
+        end
+        it "returns 2 workers for 4 jobs" do
+          MiddleManagement::Manager.send(:calculate_needed_worker_count, 4).should == 2
+        end
+        it "returns 2 workers for 5 jobs" do
+          MiddleManagement::Manager.send(:calculate_needed_worker_count, 5).should == 2
+        end
+        it "returns 2 workers for 6 jobs" do
+          MiddleManagement::Manager.send(:calculate_needed_worker_count, 6).should == 2
+        end
+        it "returns 3 workers for 7 jobs" do
+          MiddleManagement::Manager.send(:calculate_needed_worker_count, 7).should == 3
+        end
+        it "returns 10 workers for 500 jobs" do
+          MiddleManagement::Manager.send(:calculate_needed_worker_count, 500).should == 10
+        end
       end
     end
     describe "#num_jobs_changes_worker_count?" do
       before do
         stub_config(:MIN_WORKERS, 1)
         stub_config(:MAX_WORKERS, 10)
+        stub_config(:JOBS_PER_WORKER, 1)
       end
       describe "running min workers" do
         before do
