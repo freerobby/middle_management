@@ -49,3 +49,14 @@ Next 10 emails sent                                               10
 Next 10 emails sent                                               10
 Next 10 emails sent               Stop 5 workers                  5
 Last 5 emails sent                Stop 5 workers                  0
+
+Testing in your heroku environment:
+
+Middle Management comes with a Slacker class, whose sole purpose is to create jobs that take some time to run. You can use this class to create jobs in your production environment and monitor how your workers scale accordingly.
+
+To get started, go to a heroku console and run:
+> 30.times {MiddleManagement::Slacker.delay.slack_for(10)}
+
+This will create 30 jobs, each of which sleeps for 10 seconds. Middle Management will scale your workers as these jobs are created and run off. You can monitor the changes to your worker count by using "heroku workers" from your command line.
+
+http://github.com/freerobby/heroku_mbo is an empty rails app that includes this gem. If you want to fiddle with this gem in isolation, I recommend cloning that repo, creating a heroku app from it, and playing with it on a console.
