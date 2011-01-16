@@ -1,13 +1,19 @@
-Delayed Job worker management for Heroku.
+Middle Management manages your Delayed Job workers on Heroku. It "hires" and "fires" workers automatically so that you get all of your work done quickly for as little money as possible.
 
-Middle Management hires and fires your delayed_job workers automatically so that you get all of your work done quickly for as little money as possible.
+It requires delayed_job 2.1.2 or greater.
 
-Middle Management REQUIRES the following environment variables to be set:
+You can get it working out of the box with two quick steps:
+
+1) Add "middle_management" to your Gemfile and run "bundle install"
+
+2) Set the following REQUIRED environment variables using heroku config:add KEY=value:
   MIDDLE_MANAGEMENT_HEROKU_USERNAME (your heroku username)
   MIDDLE_MANAGEMENT_HEROKU_PASSWORD (your heroku password)
   MIDDLE_MANAGEMENT_HEROKU_APP (the name of your heroku app)
   MIDDLE_MANAGEMENT_MIN_WORKERS (the minimum number of workers to keep running; typically 0)
   MIDDLE_MANAGEMENT_MAX_WORKERS (the maximum number of workers to allow to run)
+
+Deploy to heroku and voila - you've got auto-scaling workers!
 
 How it works:
 
