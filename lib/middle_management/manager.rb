@@ -6,7 +6,7 @@ module MiddleManagement
   class Manager
     # ToDo: Figure out what to do about caching worker counts
     def self.enforce_number_of_current_jobs(_num_workers_last_set_at = nil, _last_enforcement_job_set_for = nil)
-      self.current_worker_count = self.get_heroku_client.info(MiddleManagement::Config::HEROKU_APP)[:workers]
+      self.current_worker_count = self.get_heroku_client.info(MiddleManagement::Config::HEROKU_APP)[:workers].to_i
       # Do nothing if our worker figures are up-to-date
       return if !self.num_jobs_changes_worker_count?(self.current_jobs_count)
       
