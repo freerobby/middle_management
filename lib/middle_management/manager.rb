@@ -73,8 +73,8 @@ module MiddleManagement
     end
     
     def self.set_num_workers(num_workers)
-      self.get_heroku_client.set_workers(MiddleManagement::Config::HEROKU_APP, num_workers)
       self.current_worker_count = num_workers
+      self.get_heroku_client.set_workers(MiddleManagement::Config::HEROKU_APP, num_workers)
     end
   end
 end
