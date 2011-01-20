@@ -4,14 +4,15 @@ require 'delayed/backend/active_record'
 
 module MiddleManagement
   class Manager
-    def self.enforce_number_of_current_jobs(_num_workers_last_set_at = nil, _current_worker_count = nil, _last_enforcement_job_set_for = nil)
+    # ToDo: Figure out what to do about caching worker counts
+    def self.enforce_number_of_current_jobs(_num_workers_last_set_at = nil, _last_enforcement_job_set_for = nil)
+      self.current_worker_count = self.get_heroku_client.info[:workers]
       # Do nothing if our worker figures are up-to-date
       return if !self.num_jobs_changes_worker_count?(self.current_jobs_count)
       
       # Load cached values if they're supplied. This is to prevent different instances
       # from re-querying the heroku API.
       self.num_workers_last_set_at = _num_workers_last_set_at unless _num_workers_last_set_at.nil?
-      self.current_worker_count = _current_worker_count unless _current_worker_count.nil?
       self.last_enforcement_job_set_for = _last_enforcement_job_set_for unless _last_enforcement_job_set_for.nil?
       
       # Set number of workers if we haven't set it recently
@@ -22,7 +23,7 @@ module MiddleManagement
         # Schedule job with cached data if we don't have one scheduled
         if self.last_enforcement_job_set_for.nil? || Time.now > self.last_enforcement_job_set_for # Prevent multiple jobs within our window
           self.last_enforcement_job_set_for = Time.now + 10.seconds
-          self.delay(:run_at => self.last_enforcement_job_set_for).enforce_number_of_current_jobs(self.num_workers_last_set_at, self.current_worker_count, self.last_enforcement_job_set_for)
+          self.delay(:run_at => self.last_enforcement_job_set_for).enforce_number_of_current_jobs(self.num_workers_last_set_at, self.last_enforcement_job_set_for)
           # Make sure we have at least one worker running to cover the job.
           self.set_num_workers(1) if self.current_worker_count == 0
         end

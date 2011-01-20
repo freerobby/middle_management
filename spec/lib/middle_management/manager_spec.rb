@@ -26,6 +26,7 @@ describe MiddleManagement::Manager do
       stub_config(:MAX_WORKERS, 10)
       stub_config(:JOBS_PER_WORKER, 1)
       @client_mock = mock("Heroku Client")
+      @client_mock.should_receive(:info).any_number_of_times.and_return({:workers => 5})
       MiddleManagement::Manager.should_receive(:get_heroku_client).any_number_of_times.and_return(@client_mock)
     end
     describe "second call within 10 seconds" do
