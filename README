@@ -16,7 +16,7 @@ To get started:
 3) Deploy to heroku and voila - you've got auto-scaling workers!
 
 You can also limit the rate at which workers will scale up by setting:
-  MIDDLE_MANAGEMENT_JOBS_PER_WORKER (default = 1)
+  MIDDLE_MANAGEMENT_JOBS_PER_WORKER (default = 10)
 This should be the number of jobs a single worker can do more quickly than it takes to bring up another heroku worker. For short tasks with high throughput (e.g. sending emails), you should bump this up (I set it at 10). For long tasks with low throughput (e.g. PDF generation or traversing a social graph), keep this low.
 
 How it works:
@@ -30,7 +30,7 @@ Middle Management will ALWAYS honor the maximum number of workers, as set by the
 Step-by-step chart, assumes:
 MIDDLE_MANAGEMENT_MIN_WORKERS=0
 MIDDLE_MANAGEMENT_MAX_WORKERS=10
-MIDDLE_MANAGEMENT_JOBS_PER_WORKER=1
+MIDDLE_MANAGEMENT_JOBS_PER_WORKER=1 (silly, but makes for an easy-to-follow example)
 
 App Action                        Middle Management Action        Total Workers Running
 Boot Up                                                           0
