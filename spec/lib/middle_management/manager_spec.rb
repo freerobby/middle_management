@@ -24,6 +24,7 @@ describe MiddleManagement::Manager do
       stub_config(:HEROKU_APP, "test_app")
       stub_config(:MIN_WORKERS, 1)
       stub_config(:MAX_WORKERS, 10)
+      stub_config(:JOBS_PER_WORKER, 1)
       @client_mock = mock("Heroku Client")
       MiddleManagement::Manager.should_receive(:get_heroku_client).any_number_of_times.and_return(@client_mock)
     end
