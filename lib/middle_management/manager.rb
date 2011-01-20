@@ -45,7 +45,7 @@ module MiddleManagement
     cattr_accessor :current_jobs_count_last_queried
     
     def self.current_jobs_count
-      if @@current_jobs_count.nil? || self.current_jobs_count_last_queried.nil? || self.current_jobs_count_last_queried < 1.minute.ago
+      if @@current_jobs_count.nil? || @@current_jobs_count == 0 || self.current_jobs_count_last_queried.nil? || self.current_jobs_count_last_queried < 1.minute.ago
         self.current_jobs_count = Delayed::Backend::ActiveRecord::Job.where("run_at <= ? AND failed_at IS NULL AND locked_by IS NULL", Delayed::Backend::ActiveRecord::Job.db_time_now).count
         self.current_jobs_count_last_queried = Time.now
       end
